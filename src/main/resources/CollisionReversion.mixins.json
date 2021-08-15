@@ -1,0 +1,16 @@
+{
+  "required": true,
+  "minVersion": "0.8",
+  "package": "tfc.collisionreversion.mixin",
+  "compatibilityLevel": "JAVA_8",
+  "refmap": "collisionreversion.refmap.json",
+  "mixins": [
+    "MixinEntity",
+    "PlayerEntityMixin"
+  ],
+  "client": [
+  ],
+  "injectors": {
+	"defaultRequire": 1
+  }
+}
