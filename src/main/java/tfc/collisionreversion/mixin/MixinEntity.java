@@ -155,10 +155,10 @@ public abstract class MixinEntity implements DotTwelveCollisionEntity {
 			if (newX != 0) {
 				newX = box.calculateXOffset(this.getBoundingBox(), newX);
 				if (newX != oldX) {
-//					if (box.maxY < this.getPosY() + stepHeight) {
-//						newY = finalY = oldY = stepY = Math.max(box.maxY - this.getPosY(), newY);
-//					} else {
-//					}
+					if (box.maxY < this.getPosY() + stepHeight) {
+						stepY = Math.max(box.maxY - this.getPosY(), newY);
+					} else {
+					}
 					this.setBoundingBox(this.getBoundingBox().offset(newX, 0.0D, 0.0D));
 					finalX = newX;
 					newX = oldX = 0;
@@ -175,25 +175,27 @@ public abstract class MixinEntity implements DotTwelveCollisionEntity {
 				}
 			}
 		}
-//		for (LegacyAxisAlignedBoundingBox box : boxes) {
-//			if (stepY != 0) {
-//				stepY = box.calculateYOffset(this.getBoundingBox(), stepY);
-//				if (stepY != oldY) {
-//					if (oldY < 0) legacyVerticalCollision = true;
+		oldY = stepY;
+		for (LegacyAxisAlignedBoundingBox box : boxes) {
+			if (stepY != 0) {
+				stepY = box.calculateYOffset(this.getBoundingBox(), stepY);
+				if (stepY != oldY) {
+					if (oldY < 0) legacyVerticalCollision = true;
 //					this.setBoundingBox(this.getBoundingBox().offset(0.0D, stepY, 0.0D));
-//					this.setMotion(this.getMotion().mul(1, 0, 1));
-//					finalY = stepY;
+					this.setMotion(this.getMotion().mul(1, 0, 1));
+					finalY = stepY;
 //					newY = finalY = oldY = stepY = 0;
-//				}
-//			}
-//		}
+					newY = oldY = stepY = 0;
+				}
+			}
+		}
 		if (finalX == 0) this.setMotion(this.getMotion().mul(0, 1, 1));
-		if (finalY == 0) this.setMotion(this.getMotion().mul(1, 0, 1));
+		if (finalY == 0 && stepY == 0) this.setMotion(this.getMotion().mul(1, 0, 1));
 		if (finalZ == 0) this.setMotion(this.getMotion().mul(1, 1, 0));
 		this.setBoundingBox(thisBB);
 		if (stepAssist) finalY = 0;
 		pos.x = finalX;
-		pos.y = finalY;
+		pos.y = (finalY == 0 ? stepY : finalY);
 		pos.z = finalZ;
 	}
 	
