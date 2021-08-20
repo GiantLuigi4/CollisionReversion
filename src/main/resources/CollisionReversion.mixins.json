@@ -6,7 +6,8 @@
   "refmap": "CollisionReversion.refmap.json",
   "mixins": [
     "MixinEntity",
-    "PlayerEntityMixin"
+    "PlayerEntityMixin",
+    "GameRendererMixin"
   ],
   "client": [
   ],

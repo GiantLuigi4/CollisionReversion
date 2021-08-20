@@ -1,7 +1,6 @@
 package tfc.collisionreversion;
 
 import net.minecraft.block.Blocks;
-import net.minecraft.block.SugarCaneBlock;
 import net.minecraft.entity.Entity;
 import net.minecraft.util.math.AxisAlignedBB;
 import net.minecraft.util.math.BlockPos;
@@ -10,7 +9,7 @@ import net.minecraftforge.fml.common.Mod;
 import net.minecraftforge.fml.loading.FMLEnvironment;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-import tfc.collisionreversion.api.CollisionLookup;
+import tfc.collisionreversion.api.collision.CollisionLookup;
 
 import java.util.ArrayList;
 

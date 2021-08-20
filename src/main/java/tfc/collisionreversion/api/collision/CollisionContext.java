@@ -1,4 +1,4 @@
-package tfc.collisionreversion.api;
+package tfc.collisionreversion.api.collision;
 
 import net.minecraft.entity.Entity;
 import net.minecraft.util.math.AxisAlignedBB;

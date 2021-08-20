@@ -3,7 +3,6 @@ package tfc.collisionreversion.mixin;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.MoverType;
 import net.minecraft.entity.Pose;
-import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.util.math.AxisAlignedBB;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.MathHelper;
@@ -11,10 +10,12 @@ import net.minecraft.util.math.vector.Vector3d;
 import net.minecraft.world.World;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;
+import org.spongepowered.asm.mixin.Unique;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
-import tfc.collisionreversion.api.CollisionLookup;
+import tfc.collisionreversion.api.CollisionReversionAPI;
+import tfc.collisionreversion.api.collision.CollisionLookup;
 import tfc.collisionreversion.DotTwelveCollisionEntity;
 import tfc.collisionreversion.LegacyAxisAlignedBoundingBox;
 
@@ -22,6 +23,7 @@ import java.util.ArrayList;
 
 @Mixin(Entity.class)
 public abstract class MixinEntity implements DotTwelveCollisionEntity {
+	@Unique
 	boolean legacyVerticalCollision = false;
 	
 	@Override
@@ -72,6 +74,7 @@ public abstract class MixinEntity implements DotTwelveCollisionEntity {
 	@Inject(method = "move", at = @At("HEAD"))
 	public void preMove(MoverType typeIn, Vector3d pos, CallbackInfo ci) {
 		if (this.noClip) return;
+		if (!CollisionReversionAPI.useCollision()) return;
 		ArrayList<LegacyAxisAlignedBoundingBox> boxes = new ArrayList<>();
 		{
 			ArrayList<AxisAlignedBB> boundingBoxes = new ArrayList<>();
