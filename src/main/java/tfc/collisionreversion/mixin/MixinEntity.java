@@ -2,7 +2,6 @@ package tfc.collisionreversion.mixin;
 
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.MoverType;
-import net.minecraft.entity.Pose;
 import net.minecraft.util.math.AxisAlignedBB;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.MathHelper;
@@ -14,10 +13,10 @@ import org.spongepowered.asm.mixin.Unique;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
-import tfc.collisionreversion.api.CollisionReversionAPI;
-import tfc.collisionreversion.api.collision.CollisionLookup;
 import tfc.collisionreversion.DotTwelveCollisionEntity;
 import tfc.collisionreversion.LegacyAxisAlignedBoundingBox;
+import tfc.collisionreversion.api.CollisionReversionAPI;
+import tfc.collisionreversion.api.collision.CollisionLookup;
 
 import java.util.ArrayList;
 
@@ -41,13 +40,7 @@ public abstract class MixinEntity implements DotTwelveCollisionEntity {
 	public abstract AxisAlignedBB getBoundingBox();
 	
 	@Shadow
-	private AxisAlignedBB boundingBox;
-	
-	@Shadow
 	public abstract void setBoundingBox(AxisAlignedBB bb);
-	
-	@Shadow
-	protected abstract AxisAlignedBB getBoundingBox(Pose pose);
 	
 	@Shadow
 	public abstract void setMotion(Vector3d motionIn);
@@ -56,13 +49,7 @@ public abstract class MixinEntity implements DotTwelveCollisionEntity {
 	public abstract Vector3d getMotion();
 	
 	@Shadow
-	public abstract Vector3d getPositionVec();
-	
-	@Shadow
 	protected boolean onGround;
-	
-	@Shadow
-	public float fallDistance;
 	
 	@Shadow
 	public boolean collidedVertically;
@@ -72,7 +59,7 @@ public abstract class MixinEntity implements DotTwelveCollisionEntity {
 	@Shadow public abstract double getPosY();
 	
 	@Inject(method = "move", at = @At("HEAD"))
-	public void preMove(MoverType typeIn, Vector3d pos, CallbackInfo ci) {
+	public void LegacyCollision_preMove(MoverType typeIn, Vector3d pos, CallbackInfo ci) {
 		if (this.noClip) return;
 		if (!CollisionReversionAPI.useCollision()) return;
 		ArrayList<LegacyAxisAlignedBoundingBox> boxes = new ArrayList<>();
@@ -144,6 +131,7 @@ public abstract class MixinEntity implements DotTwelveCollisionEntity {
 		legacyVerticalCollision = false;
 		double stepHeight = this.stepHeight;
 		boolean stepAssist = false;
+		double stepAssistMagicNumber = stepHeight / 7.5;
 		for (LegacyAxisAlignedBoundingBox box : boxes) {
 			if (newY != 0) {
 				newY = box.calculateYOffset(this.getBoundingBox(), newY);
@@ -159,36 +147,39 @@ public abstract class MixinEntity implements DotTwelveCollisionEntity {
 				newX = box.calculateXOffset(this.getBoundingBox(), newX);
 				if (newX != oldX) {
 					if (box.maxY < this.getPosY() + stepHeight) {
-						stepY = Math.max(box.maxY - this.getPosY(), newY);
+						stepY = Math.max((box.maxY - this.getPosY()) + stepAssistMagicNumber, newY);
 					} else {
+						this.setBoundingBox(this.getBoundingBox().offset(newX, 0.0D, 0.0D));
+						finalX = newX;
+						newX = oldX = 0;
 					}
-					this.setBoundingBox(this.getBoundingBox().offset(newX, 0.0D, 0.0D));
-					finalX = newX;
-					newX = oldX = 0;
 				}
 			}
 			if (newZ != 0) {
 				newZ = box.calculateZOffset(this.getBoundingBox(), newZ);
 				if (newZ != oldZ) {
-					this.setBoundingBox(this.getBoundingBox().offset(0.0D, 0.0D, newZ));
-					if (box.maxY < this.getPosY() + stepHeight) newY = finalY = oldY = box.maxY - this.getPosY();
-					stepAssist = true;
-					finalZ = newZ;
-					newZ = oldZ = 0;
+					if (box.maxY < this.getPosY() + stepHeight) {
+						stepY = Math.max((box.maxY - this.getPosY()) + stepAssistMagicNumber, newY);
+//						stepAssist = true;
+					} else {
+						this.setBoundingBox(this.getBoundingBox().offset(0.0D, 0.0D, newZ));
+						finalZ = newZ;
+						newZ = oldZ = 0;
+					}
 				}
 			}
 		}
-		oldY = stepY;
 		for (LegacyAxisAlignedBoundingBox box : boxes) {
 			if (stepY != 0) {
 				stepY = box.calculateYOffset(this.getBoundingBox(), stepY);
 				if (stepY != oldY) {
 					if (oldY < 0) legacyVerticalCollision = true;
-//					this.setBoundingBox(this.getBoundingBox().offset(0.0D, stepY, 0.0D));
+					this.setBoundingBox(this.getBoundingBox().offset(0.0D, stepY, 0.0D));
 					this.setMotion(this.getMotion().mul(1, 0, 1));
 					finalY = stepY;
+					stepAssist = true;
 //					newY = finalY = oldY = stepY = 0;
-					newY = oldY = stepY = 0;
+//					finalY = newY = oldY = stepY = 0;
 				}
 			}
 		}
@@ -196,14 +187,17 @@ public abstract class MixinEntity implements DotTwelveCollisionEntity {
 		if (finalY == 0 && stepY == 0) this.setMotion(this.getMotion().mul(1, 0, 1));
 		if (finalZ == 0) this.setMotion(this.getMotion().mul(1, 1, 0));
 		this.setBoundingBox(thisBB);
-		if (stepAssist) finalY = 0;
+		if (stepAssist) {
+			this.setBoundingBox(this.getBoundingBox().offset(0.0D, stepY, 0.0D));
+			finalY = 0;
+		}
 		pos.x = finalX;
 		pos.y = (finalY == 0 ? stepY : finalY);
 		pos.z = finalZ;
 	}
 	
 	@Inject(at = @At(value = "INVOKE", target = "Lnet/minecraft/entity/Entity;updateFallState(DZLnet/minecraft/block/BlockState;Lnet/minecraft/util/math/BlockPos;)V"), method = "move")
-	public void preUpdateFallState(MoverType typeIn, Vector3d pos, CallbackInfo ci) {
+	public void LegacyCollision_preUpdateFallState(MoverType typeIn, Vector3d pos, CallbackInfo ci) {
 		if (legacyVerticalCollision) {
 			onGround = true;
 			collidedVertically = true;

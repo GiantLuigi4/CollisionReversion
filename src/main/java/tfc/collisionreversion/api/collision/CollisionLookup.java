@@ -4,7 +4,6 @@ import net.minecraft.entity.Entity;
 import net.minecraft.util.math.AxisAlignedBB;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.World;
-import tfc.collisionreversion.api.collision.CollisionContext;
 
 import java.util.ArrayList;
 import java.util.function.Consumer;
@@ -16,6 +15,7 @@ public class CollisionLookup {
 	
 	public static ArrayList<AxisAlignedBB> getBoundingBoxes(World world, BlockPos pos, Entity entity, ArrayList<AxisAlignedBB> boundingBoxes) {
 		for (Consumer<CollisionContext> boxFiller : boxFillers) {
+//			System.out.println("filling boxes");
 			context.boxes = boundingBoxes;
 			context.pos = pos;
 			context.world = world;
@@ -26,6 +26,7 @@ public class CollisionLookup {
 	}
 	
 	public static void registerBoxFiller(Consumer<CollisionContext> filler) {
+		System.out.println("Registering a box filler");
 		boxFillers.add(filler);
 	}
 }

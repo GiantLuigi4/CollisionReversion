@@ -1,15 +1,17 @@
 package tfc.collisionreversion.api;
 
+import tfc.collisionreversion.Config;
+
 public class CollisionReversionAPI {
-	private static boolean collisionEnabled = true;
+//	private static boolean collisionEnabled = true;
 	
 	public static boolean useCollision() {
-		return collisionEnabled;
+		return Config.COMMON.useCollisionReversion.get();
 	}
-	
-	private static boolean selectionEnabled = true;
+
+//	private static boolean selectionEnabled = true;
 	
 	public static boolean useSelection() {
-		return selectionEnabled;
+		return Config.COMMON.useSelectionReversion.get();
 	}
 }

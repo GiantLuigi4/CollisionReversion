@@ -21,7 +21,7 @@ public class GameRendererMixin {
 	@Shadow @Final private Minecraft mc;
 	
 	@Inject(at = @At("TAIL"), method = "getMouseOver")
-	public void postGetObjectMouseOver(float partialTicks, CallbackInfo ci) {
+	public void LegacyCollision_postGetObjectMouseOver(float partialTicks, CallbackInfo ci) {
 		if (!CollisionReversionAPI.useSelection()) return;
 		Entity entity = mc.player;
 		if (entity == null) return;

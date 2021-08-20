@@ -78,7 +78,8 @@ public class PlayerEntityMixin {
 		if (Math.abs(((Double) args.get(0))) < Math.abs(xOff)) args.set(0, xOff);
 		if (Math.abs(((Double) args.get(2))) < Math.abs(zOff)) args.set(2, zOff);
 	}
-
+	
+	@Unique
 	public boolean LegacyCollision_hasNoCollisions(Entity entity, AxisAlignedBB aabb) {
 		World world = entity.world;
 		ArrayList<AxisAlignedBB> boundingBoxes = new ArrayList<>();

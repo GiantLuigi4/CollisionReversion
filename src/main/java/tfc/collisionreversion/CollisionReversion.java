@@ -5,8 +5,9 @@ import net.minecraft.entity.Entity;
 import net.minecraft.util.math.AxisAlignedBB;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.World;
+import net.minecraftforge.fml.ModLoadingContext;
 import net.minecraftforge.fml.common.Mod;
-import net.minecraftforge.fml.loading.FMLEnvironment;
+import net.minecraftforge.fml.config.ModConfig;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import tfc.collisionreversion.api.collision.CollisionLookup;
@@ -21,7 +22,8 @@ public class CollisionReversion {
 	private static final Logger LOGGER = LogManager.getLogger();
 	
 	public CollisionReversion() {
-		if (!FMLEnvironment.production) {
+		ModLoadingContext.get().registerConfig(ModConfig.Type.COMMON, Config.commonSpec);
+//		if (!FMLEnvironment.production) {
 			CollisionLookup.registerBoxFiller(
 					(context)-> {
 						BlockPos pos = context.getPos();
@@ -38,23 +40,28 @@ public class CollisionReversion {
 //									new AxisAlignedBB(pos.getX(), entity.getPosY() + entity.getHeight() + 0.01, pos.getZ(), pos.getX() + 1, entity.getPosY() + entity.getHeight() + 0.01, pos.getZ() + 1)
 //							);
 //						}
-						if (world.getBlockState(pos).getBlock().equals(Blocks.AIR)) {
-							if (!entity.isCrouching()) {
-//								if (pos.getY() + 1 <= entity.getPosY()) {
+						if (world.getBlockState(pos).equals(Blocks.STONE_SLAB.getDefaultState())) {
+							boxes.add(new AxisAlignedBB(pos.getX(), pos.getY(), pos.getZ(), pos.getX() + 1, pos.getY() + 0.5, pos.getZ() + 1));
+//							if (!entity.isCrouching()) {
+////								if (pos.getY() + 1 <= entity.getPosY()) {
+////									boxes.add(
+//////											new AxisAlignedBB(pos.getX(), pos.getY() + 0.5, pos.getZ(), pos.getX() + 1, pos.getY() + 1, pos.getZ() + 1)
+////											new AxisAlignedBB(pos.getX(), pos.getY(), pos.getZ(), pos.getX() + 1, pos.getY() + 1, pos.getZ() + 1)
+////									);
+////								}
+//								if (pos.getY() == (int) entity.getPosY()) {
 //									boxes.add(
-////											new AxisAlignedBB(pos.getX(), pos.getY() + 0.5, pos.getZ(), pos.getX() + 1, pos.getY() + 1, pos.getZ() + 1)
-//											new AxisAlignedBB(pos.getX(), pos.getY(), pos.getZ(), pos.getX() + 1, pos.getY() + 1, pos.getZ() + 1)
+//											new AxisAlignedBB(pos.getX(), pos.getY(), pos.getZ(), pos.getX() + 1, pos.getY() + 0.5, pos.getZ() + 1)
 //									);
 //								}
-								if (pos.getY() == (int) entity.getPosY()) {
-									boxes.add(
-											new AxisAlignedBB(pos.getX(), pos.getY(), pos.getZ(), pos.getX() + 1, pos.getY() + 0.5, pos.getZ() + 1)
-									);
-								}
-							}
+//							}
+						} else if (world.getBlockState(pos).equals(Blocks.DIRT.getDefaultState())) {
+							boxes.add(new AxisAlignedBB(pos.getX(), pos.getY(), pos.getZ(), pos.getX() + 1, pos.getY() + 1, pos.getZ() + 1));
+						} else if (world.getBlockState(pos).getBlock().equals(Blocks.RAIL)) {
+							boxes.add(new AxisAlignedBB(pos.getX(), pos.getY(), pos.getZ(), pos.getX() + 1, pos.getY() + 0.5, pos.getZ() + 1));
 						}
 					}
 			);
-		}
+//		}
 	}
 }
