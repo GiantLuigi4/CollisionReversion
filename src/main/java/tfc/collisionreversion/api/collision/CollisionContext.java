@@ -1,5 +1,6 @@
-package tfc.collisionreversion.api;
+package tfc.collisionreversion.api.collision;
 
+import net.minecraft.block.BlockState;
 import net.minecraft.entity.Entity;
 import net.minecraft.util.math.AxisAlignedBB;
 import net.minecraft.util.math.BlockPos;
@@ -12,6 +13,7 @@ public class CollisionContext {
 	protected World world;
 	protected BlockPos pos;
 	protected ArrayList<AxisAlignedBB> boxes;
+	protected BlockState state = null;
 	
 	public Entity getEntity() {
 		return entity;
@@ -27,5 +29,10 @@ public class CollisionContext {
 	
 	public ArrayList<AxisAlignedBB> getBoxes() {
 		return boxes;
+	}
+	
+	public BlockState getBlockState() {
+		if (state == null) state = world.getBlockState(pos);
+		return state;
 	}
 }

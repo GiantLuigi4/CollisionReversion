@@ -3,7 +3,6 @@ package tfc.collisionreversion.mixin;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.MoverType;
 import net.minecraft.entity.Pose;
-import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.util.math.AxisAlignedBB;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.MathHelper;
@@ -11,17 +10,21 @@ import net.minecraft.util.math.vector.Vector3d;
 import net.minecraft.world.World;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;
+import org.spongepowered.asm.mixin.Unique;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
-import tfc.collisionreversion.api.CollisionLookup;
+import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 import tfc.collisionreversion.DotTwelveCollisionEntity;
 import tfc.collisionreversion.LegacyAxisAlignedBoundingBox;
+import tfc.collisionreversion.api.CollisionReversionAPI;
+import tfc.collisionreversion.api.collision.CollisionLookup;
 
 import java.util.ArrayList;
 
 @Mixin(Entity.class)
 public abstract class MixinEntity implements DotTwelveCollisionEntity {
+	@Unique
 	boolean legacyVerticalCollision = false;
 	
 	@Override
@@ -39,13 +42,7 @@ public abstract class MixinEntity implements DotTwelveCollisionEntity {
 	public abstract AxisAlignedBB getBoundingBox();
 	
 	@Shadow
-	private AxisAlignedBB boundingBox;
-	
-	@Shadow
 	public abstract void setBoundingBox(AxisAlignedBB bb);
-	
-	@Shadow
-	protected abstract AxisAlignedBB getBoundingBox(Pose pose);
 	
 	@Shadow
 	public abstract void setMotion(Vector3d motionIn);
@@ -54,13 +51,7 @@ public abstract class MixinEntity implements DotTwelveCollisionEntity {
 	public abstract Vector3d getMotion();
 	
 	@Shadow
-	public abstract Vector3d getPositionVec();
-	
-	@Shadow
 	protected boolean onGround;
-	
-	@Shadow
-	public float fallDistance;
 	
 	@Shadow
 	public boolean collidedVertically;
@@ -69,9 +60,11 @@ public abstract class MixinEntity implements DotTwelveCollisionEntity {
 	
 	@Shadow public abstract double getPosY();
 	
-	@Inject(method = "move", at = @At("HEAD"))
-	public void preMove(MoverType typeIn, Vector3d pos, CallbackInfo ci) {
-		if (this.noClip) return;
+	@Shadow protected abstract AxisAlignedBB getBoundingBox(Pose pose);
+	
+	@Inject(method = "getAllowedMovement(Lnet/minecraft/util/math/vector/Vector3d;)Lnet/minecraft/util/math/vector/Vector3d;", at = @At("HEAD"))
+	public void LegacyCollision_preMove(Vector3d pos, CallbackInfoReturnable<Vector3d> cir) {
+		if (!CollisionReversionAPI.useCollision() || this.getBoundingBox() == null) return;
 		ArrayList<LegacyAxisAlignedBoundingBox> boxes = new ArrayList<>();
 		{
 			ArrayList<AxisAlignedBB> boundingBoxes = new ArrayList<>();
@@ -80,7 +73,7 @@ public abstract class MixinEntity implements DotTwelveCollisionEntity {
 				int x1 = MathHelper.floor(aabb.minX) - 1;
 				int x2 = MathHelper.ceil(aabb.maxX) + 1;
 				int y1 = MathHelper.floor(aabb.minY) - 1;
-				int y2 = MathHelper.ceil(aabb.maxY) + 1;
+				int y2 = MathHelper.ceil(aabb.maxY) + 1 + MathHelper.ceil(stepHeight);
 				int z1 = MathHelper.floor(aabb.minZ) - 1;
 				int z2 = MathHelper.ceil(aabb.maxZ) + 1;
 				for (int x = x1; x < x2; x++) {
@@ -141,6 +134,11 @@ public abstract class MixinEntity implements DotTwelveCollisionEntity {
 		legacyVerticalCollision = false;
 		double stepHeight = this.stepHeight;
 		boolean stepAssist = false;
+		double stepAssistMagicNumber = stepHeight / 7.5;
+		
+		boolean cancelXIfStepFail = false;
+		boolean cancelZIfStepFail = false;
+		
 		for (LegacyAxisAlignedBoundingBox box : boxes) {
 			if (newY != 0) {
 				newY = box.calculateYOffset(this.getBoundingBox(), newY);
@@ -155,50 +153,76 @@ public abstract class MixinEntity implements DotTwelveCollisionEntity {
 			if (newX != 0) {
 				newX = box.calculateXOffset(this.getBoundingBox(), newX);
 				if (newX != oldX) {
-//					if (box.maxY < this.getPosY() + stepHeight) {
-//						newY = finalY = oldY = stepY = Math.max(box.maxY - this.getPosY(), newY);
-//					} else {
-//					}
-					this.setBoundingBox(this.getBoundingBox().offset(newX, 0.0D, 0.0D));
-					finalX = newX;
-					newX = oldX = 0;
+					if (box.maxY < this.getPosY() + stepHeight) {
+						stepY = Math.max((box.maxY - this.getPosY()) + stepAssistMagicNumber, newY);
+						cancelXIfStepFail = true;
+					} else {
+						this.setBoundingBox(this.getBoundingBox().offset(newX, 0.0D, 0.0D));
+						finalX = newX;
+						newX = oldX = 0;
+					}
 				}
 			}
 			if (newZ != 0) {
 				newZ = box.calculateZOffset(this.getBoundingBox(), newZ);
 				if (newZ != oldZ) {
-					this.setBoundingBox(this.getBoundingBox().offset(0.0D, 0.0D, newZ));
-					if (box.maxY < this.getPosY() + stepHeight) newY = finalY = oldY = box.maxY - this.getPosY();
-					stepAssist = true;
-					finalZ = newZ;
-					newZ = oldZ = 0;
+					if (box.maxY < this.getPosY() + stepHeight) {
+						stepY = Math.max((box.maxY - this.getPosY()) + stepAssistMagicNumber, newY);
+//						stepAssist = true;
+						cancelZIfStepFail = true;
+					} else {
+						this.setBoundingBox(this.getBoundingBox().offset(0.0D, 0.0D, newZ));
+						finalZ = newZ;
+						newZ = oldZ = 0;
+					}
 				}
 			}
 		}
-//		for (LegacyAxisAlignedBoundingBox box : boxes) {
-//			if (stepY != 0) {
-//				stepY = box.calculateYOffset(this.getBoundingBox(), stepY);
-//				if (stepY != oldY) {
-//					if (oldY < 0) legacyVerticalCollision = true;
-//					this.setBoundingBox(this.getBoundingBox().offset(0.0D, stepY, 0.0D));
-//					this.setMotion(this.getMotion().mul(1, 0, 1));
-//					finalY = stepY;
+		double startY = this.getBoundingBox().minY;
+		for (LegacyAxisAlignedBoundingBox box : boxes) {
+			oldY = stepY;
+			if (stepY != 0) {
+				stepY = box.calculateYOffset(this.getBoundingBox(), stepY);
+				if (stepY > oldY) {
+					if (oldY < 0) legacyVerticalCollision = true;
+					this.setBoundingBox(this.getBoundingBox().offset(0.0D, stepY, 0.0D));
+					this.setMotion(this.getMotion().mul(1, 0, 1));
+					finalY = stepY;
+					stepAssist = true;
 //					newY = finalY = oldY = stepY = 0;
-//				}
-//			}
-//		}
+//					finalY = newY = oldY = stepY = 0;
+				} else if (stepY != oldY) {
+					this.setBoundingBox(this.getBoundingBox().offset(0, startY - this.getBoundingBox().minY, 0));
+					if (cancelXIfStepFail) {
+						finalX = newX = 0;
+						newX = oldX = 0;
+						this.setBoundingBox(this.getBoundingBox().offset(newX, 0.0D, 0.0D));
+					}
+					if (cancelZIfStepFail) {
+						finalZ = newZ = 0;
+						newZ = oldZ = 0;
+						this.setBoundingBox(this.getBoundingBox().offset(0.0D, 0.0D, newZ));
+					}
+					finalY = 0;
+					stepY = 0;
+				}
+			}
+		}
 		if (finalX == 0) this.setMotion(this.getMotion().mul(0, 1, 1));
-		if (finalY == 0) this.setMotion(this.getMotion().mul(1, 0, 1));
+		if (finalY == 0 && stepY == 0) this.setMotion(this.getMotion().mul(1, 0, 1));
 		if (finalZ == 0) this.setMotion(this.getMotion().mul(1, 1, 0));
 		this.setBoundingBox(thisBB);
-		if (stepAssist) finalY = 0;
+		if (stepAssist) {
+//			this.setBoundingBox(this.getBoundingBox().offset(0.0D, stepY, 0.0D));
+			finalY = 0;
+		}
 		pos.x = finalX;
-		pos.y = finalY;
+		pos.y = (finalY == 0 ? stepY : finalY);
 		pos.z = finalZ;
 	}
 	
 	@Inject(at = @At(value = "INVOKE", target = "Lnet/minecraft/entity/Entity;updateFallState(DZLnet/minecraft/block/BlockState;Lnet/minecraft/util/math/BlockPos;)V"), method = "move")
-	public void preUpdateFallState(MoverType typeIn, Vector3d pos, CallbackInfo ci) {
+	public void LegacyCollision_preUpdateFallState(MoverType typeIn, Vector3d pos, CallbackInfo ci) {
 		if (legacyVerticalCollision) {
 			onGround = true;
 			collidedVertically = true;

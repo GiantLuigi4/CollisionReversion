@@ -1,16 +1,23 @@
 package tfc.collisionreversion;
 
+import net.minecraft.block.BlockState;
 import net.minecraft.block.Blocks;
+import net.minecraft.block.HopperBlock;
 import net.minecraft.block.SugarCaneBlock;
 import net.minecraft.entity.Entity;
 import net.minecraft.util.math.AxisAlignedBB;
 import net.minecraft.util.math.BlockPos;
+import net.minecraft.util.math.shapes.ISelectionContext;
+import net.minecraft.util.math.shapes.VoxelShape;
 import net.minecraft.world.World;
+import net.minecraftforge.fml.ModLoadingContext;
 import net.minecraftforge.fml.common.Mod;
+import net.minecraftforge.fml.config.ModConfig;
 import net.minecraftforge.fml.loading.FMLEnvironment;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-import tfc.collisionreversion.api.CollisionLookup;
+import tfc.collisionreversion.api.collision.CollisionLookup;
+import tfc.collisionreversion.api.selection.SelectionLookup;
 
 import java.util.ArrayList;
 
@@ -22,6 +29,20 @@ public class CollisionReversion {
 	private static final Logger LOGGER = LogManager.getLogger();
 	
 	public CollisionReversion() {
+		ModLoadingContext.get().registerConfig(ModConfig.Type.COMMON, Config.commonSpec);
+		
+		CollisionLookup.registerBoxFiller((context)->{
+			if (Config.COMMON.globalLegacy.get()) {
+				BlockState state = context.getBlockState();
+				if (state.isAir()) return;
+				ISelectionContext iselectioncontext = ISelectionContext.forEntity(context.getEntity());
+				VoxelShape shape = state.getCollisionShape(context.getWorld(), context.getPos(), iselectioncontext);
+//				if (shape == null) shape = state.getShape(context.getWorld(), context.getPos(), iselectioncontext);
+				ArrayList<AxisAlignedBB> boxes = context.getBoxes();
+				for (AxisAlignedBB axisAlignedBB : shape.toBoundingBoxList()) boxes.add(axisAlignedBB.offset(context.getPos()));
+			}
+		});
+		
 		if (!FMLEnvironment.production) {
 			CollisionLookup.registerBoxFiller(
 					(context)-> {
@@ -56,6 +77,14 @@ public class CollisionReversion {
 						}
 					}
 			);
+			
+			SelectionLookup.registerBoxFiller((context)->{
+				if (context.getBlockState().getBlock() instanceof HopperBlock) {
+					BlockPos pos = context.getPos();
+					ArrayList<AxisAlignedBB> boxes = context.getBoxes();
+					boxes.add(new AxisAlignedBB(pos.getX(), pos.getY(), pos.getZ(), pos.getX() + 1, pos.getY() + 1, pos.getZ() + 1));
+				}
+			});
 		}
 	}
 }
