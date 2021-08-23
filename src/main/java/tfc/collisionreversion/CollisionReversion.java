@@ -34,9 +34,10 @@ public class CollisionReversion {
 		CollisionLookup.registerBoxFiller((context)->{
 			if (Config.COMMON.globalLegacy.get()) {
 				BlockState state = context.getBlockState();
-				if (state.isAir()) return;
-				ISelectionContext iselectioncontext = ISelectionContext.forEntity(context.getEntity());
+				if (state == null) return;
+				ISelectionContext iselectioncontext = context.getContext();
 				VoxelShape shape = state.getCollisionShape(context.getWorld(), context.getPos(), iselectioncontext);
+				if (shape.isEmpty()) return;
 //				if (shape == null) shape = state.getShape(context.getWorld(), context.getPos(), iselectioncontext);
 				ArrayList<AxisAlignedBB> boxes = context.getBoxes();
 				for (AxisAlignedBB axisAlignedBB : shape.toBoundingBoxList()) boxes.add(axisAlignedBB.offset(context.getPos()));
@@ -61,7 +62,7 @@ public class CollisionReversion {
 //							);
 //						}
 						if (world.getBlockState(pos).getBlock().equals(Blocks.AIR)) {
-							if (!entity.isCrouching()) {
+							if (!entity.isCrouching() || true) {
 //								if (pos.getY() + 1 <= entity.getPosY()) {
 //									boxes.add(
 ////											new AxisAlignedBB(pos.getX(), pos.getY() + 0.5, pos.getZ(), pos.getX() + 1, pos.getY() + 1, pos.getZ() + 1)

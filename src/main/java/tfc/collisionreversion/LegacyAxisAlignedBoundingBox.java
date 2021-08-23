@@ -28,17 +28,13 @@ public class LegacyAxisAlignedBoundingBox extends AxisAlignedBB {
 	public double calculateXOffset(AxisAlignedBB other, double offsetX) {
 		if (other.maxY > this.minY && other.minY < this.maxY && other.maxZ > this.minZ && other.minZ < this.maxZ) {
 			if (offsetX > 0.0D && other.maxX <= this.minX) {
-				double d1 = this.minX - other.maxX;
+				double deltaX = this.minX - other.maxX;
 				
-				if (d1 < offsetX) {
-					offsetX = d1;
-				}
+				if (deltaX < offsetX) offsetX = deltaX;
 			} else if (offsetX < 0.0D && other.minX >= this.maxX) {
-				double d0 = this.maxX - other.minX;
+				double deltaX = this.maxX - other.minX;
 				
-				if (d0 > offsetX) {
-					offsetX = d0;
-				}
+				if (deltaX > offsetX) offsetX = deltaX;
 			}
 		}
 		return offsetX;
