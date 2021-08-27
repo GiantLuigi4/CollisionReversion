@@ -1,4 +1,4 @@
-package tfc.collisionreversion.code;
+package tfc.collisionreversion.utils;
 
 public class StepResult {
 	protected boolean stepUpX = false;
