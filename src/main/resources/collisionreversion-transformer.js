@@ -29,16 +29,16 @@ function initializeCoreMod() {
 //					print("Transforming method " + node.name);
 				var arrayLength = node.instructions.size();
 				var targetInstruction = null;
-				var maxStore = 0;
+//				var maxStore = 0;
 				for (var i = 0; i < arrayLength; i++) {
 					var insn = node.instructions.get(i);
-					if (insn instanceof VarInsnNode) {
-						if (insn.getOpcode() == Opcodes.ASTORE) {
-							if (maxStore < insn.var) {
-								maxStore = insn.var + 1;
-							}
-						}
-					}
+//					if (insn instanceof VarInsnNode) {
+//						if (insn.getOpcode() == Opcodes.ASTORE) {
+//							if (maxStore < insn.var) {
+//								maxStore = insn.var + 1;
+//							}
+//						}
+//					}
 					if (insn instanceof MethodInsnNode) {
 						if (insn.name.equals("doRayTrace")) {
 							targetInstruction = insn;
