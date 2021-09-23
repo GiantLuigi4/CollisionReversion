@@ -104,12 +104,12 @@ public class Config {
 			globalLegacy = builder
 					.comment("Causes collision reversion to use 1.12 collision for vanilla blocks along side 1.16 collision\nSlightly slower, but a lot more precise")
 					.translation("config.collisionreversion.global_legacy")
-					.define("GlobalLegacy", true);
+					.define("GlobalLegacy", !FMLEnvironment.production);
 			
 			cancelVanillaCollision = builder
 					.comment("Cancels vanilla collision entirely, making the game only use collision reversion's collision system\nThis will change how the game plays, granted probably will be hard to notice")
 					.translation("config.collisionreversion.legacy_only")
-					.define("LegacyOnly", false);
+					.define("LegacyOnly", !FMLEnvironment.production);
 			
 			builder.pop();
 		}

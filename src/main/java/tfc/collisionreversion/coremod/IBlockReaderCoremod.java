@@ -92,7 +92,7 @@ public class IBlockReaderCoremod {
 						}
 						if (result == null) continue;
 						double dist1 = result.getHitVec().distanceTo(eyeVec);
-						if (dist1 < bestDist) {
+						if (dist1 <= bestDist) {
 							bestDist = dist1;
 							bestResult = result;
 							if (invertFace) break;

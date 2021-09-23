@@ -10,6 +10,7 @@ function initializeCoreMod() {
     var Opcodes = Java.type('org.objectweb.asm.Opcodes');
 //    var FMLEnvironment = Java.type('net.minecraftforge.fml.loading.FMLEnvironment');
     var mappedMethodName = ASMAPI.mapMethod("func_217299_a");
+    var mappedTargetName = ASMAPI.mapMethod("func_217300_a");
 
     var TraceMethodVisitor = Java.type('org.objectweb.asm.util.TraceMethodVisitor');
     var Textifier = Java.type('org.objectweb.asm.util.Textifier');
@@ -40,11 +41,17 @@ function initializeCoreMod() {
 //						}
 //					}
 					if (insn instanceof MethodInsnNode) {
-						if (insn.name.equals("doRayTrace")) {
+						if (insn.name.equals(mappedTargetName)) {
 							targetInstruction = insn;
 						}
 					}
 				}
+
+				var visitor = new TraceMethodVisitor(new Textifier());
+				for(var iter = node.instructions.iterator(); iter.hasNext();){
+					iter.next().accept(visitor);
+				}
+				print(visitor.p.getText());
 
 				var list = new InsnList();
 				list.add(new TypeInsnNode(Opcodes.CHECKCAST, "net/minecraft/util/math/BlockRayTraceResult"));
@@ -55,14 +62,6 @@ function initializeCoreMod() {
 //				list.add(new VarInsnNode(Opcodes.ASTORE, maxStore));
 //				list.add(new VarInsnNode(Opcodes.ALOAD, maxStore));
 				node.instructions.insert(targetInstruction, list);
-
-//				if (!FMLEnvironment.dist.isProduction) {
-//					var visitor = new TraceMethodVisitor(new Textifier());
-//					for(var iter = node.instructions.iterator(); iter.hasNext();){
-//						iter.next().accept(visitor);
-//					}
-//					print(visitor.p.getText());
-//				}
 
 				return node;
             }
