@@ -15,8 +15,12 @@ function initializeCoreMod() {
     var TraceMethodVisitor = Java.type('org.objectweb.asm.util.TraceMethodVisitor');
     var Textifier = Java.type('org.objectweb.asm.util.Textifier');
 
-	// afaik, this should not wind up being incompatible with stuff
-	// what I'm doing, is I'm storing the
+	// afaik, this should not wind up being incompatible with anything really
+	// only reason it'd be incompatible is if someone overwrote the method
+	// what I'm doing, is I'm taking the result of the method as well as the second argument and calling my own method
+	// this method than does calculations with those two inputs and returns a modified raytrace result
+	// now that this modified raytrace result is the only thing on the stack, if another coremod were to do the exact same thing, the two would not affect eachother
+	// so long as both coremods do a length check on the old result and their result, everything will work as intended
 	return {
 		'coremodmethod': {
 			'target': {
@@ -47,11 +51,11 @@ function initializeCoreMod() {
 					}
 				}
 
-				var visitor = new TraceMethodVisitor(new Textifier());
-				for(var iter = node.instructions.iterator(); iter.hasNext();){
-					iter.next().accept(visitor);
-				}
-				print(visitor.p.getText());
+//				var visitor = new TraceMethodVisitor(new Textifier());
+//				for(var iter = node.instructions.iterator(); iter.hasNext();){
+//					iter.next().accept(visitor);
+//				}
+//				print(visitor.p.getText());
 
 				var list = new InsnList();
 				list.add(new TypeInsnNode(Opcodes.CHECKCAST, "net/minecraft/util/math/BlockRayTraceResult"));
