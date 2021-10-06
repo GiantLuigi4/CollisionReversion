@@ -39,4 +39,6 @@ public interface ILegacyContext {
 	 * @return if it meets the criteria above
 	 */
 	boolean checkBoundingBox(AxisAlignedBB box);
+	
+	boolean raytrace(AxisAlignedBB bb);
 }

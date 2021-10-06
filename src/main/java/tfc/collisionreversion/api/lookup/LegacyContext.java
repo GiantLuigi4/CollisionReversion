@@ -6,14 +6,11 @@ import net.minecraft.util.math.AxisAlignedBB;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.shapes.EntitySelectionContext;
 import net.minecraft.util.math.shapes.ISelectionContext;
+import net.minecraft.util.math.vector.Vector3d;
 import net.minecraft.world.World;
-import net.minecraftforge.server.permission.context.IContext;
 import tfc.collisionreversion.api.ILegacyContext;
 
-import java.util.ArrayList;
 import java.util.List;
-
-import static tfc.collisionreversion.utils.CommonUtils.contains;
 
 public class LegacyContext implements ILegacyContext {
 	protected Entity entity;
@@ -24,6 +21,8 @@ public class LegacyContext implements ILegacyContext {
 	protected EntitySelectionContext context;
 	protected AxisAlignedBB motionBox;
 	protected boolean boxCheck;
+	protected Vector3d start = null;
+	protected Vector3d end = null;
 	
 	public Entity getEntity() {
 		return entity;
@@ -81,5 +80,10 @@ public class LegacyContext implements ILegacyContext {
 		}
 //		return !entity.getBoundingBox().intersects(box);
 		return true;
+	}
+	
+	@Override
+	public boolean raytrace(AxisAlignedBB bb) {
+		return bb.rayTrace(start, end).isPresent();
 	}
 }

@@ -74,7 +74,7 @@ public class IBlockReaderCoremod {
 							((PlayerEntity) entity).setArrowCountInEntity(0);
 						}
 						BlockPos pos = new BlockPos(x, y, z);
-						if (selection) SelectionLookup.getBoundingBoxes(world, pos, entity, boundingBoxes, context, region);
+						if (selection) SelectionLookup.getBoundingBoxes(world, pos, entity, boundingBoxes, context, region, eyeVec, endVec);
 						else CollisionLookup.getBoundingBoxes(world, pos, entity, boundingBoxes, context, region, true);
 						boolean invertFace = false;
 						for (int i = 0; i < boundingBoxes.size(); i++) {

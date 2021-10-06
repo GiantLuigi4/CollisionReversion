@@ -1,5 +1,3 @@
-package tfc.collisionreversion.coremod;
-
 import net.minecraft.block.BlockState;
 import net.minecraft.fluid.FluidState;
 import net.minecraft.tileentity.TileEntity;
@@ -12,6 +10,7 @@ import net.minecraft.util.math.vector.Vector3d;
 import net.minecraft.world.IBlockReader;
 import org.objectweb.asm.Opcodes;
 import org.objectweb.asm.tree.*;
+import tfc.collisionreversion.coremod.IBlockReaderCoremod;
 
 import javax.annotation.Nullable;
 
