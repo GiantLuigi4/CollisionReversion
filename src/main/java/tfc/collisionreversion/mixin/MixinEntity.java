@@ -3,7 +3,7 @@ package tfc.collisionreversion.mixin;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.MoverType;
 import net.minecraft.entity.Pose;
-import net.minecraft.util.math.*;
+import net.minecraft.util.math.AxisAlignedBB;
 import net.minecraft.util.math.vector.Vector3d;
 import net.minecraft.world.World;
 import org.spongepowered.asm.mixin.Mixin;
@@ -17,7 +17,7 @@ import tfc.collisionreversion.Config;
 import tfc.collisionreversion.utils.EntityMixinHelper;
 import tfc.collisionreversion.utils.EnumVCollisionType;
 
-import static tfc.collisionreversion.utils.CommonUtils.*;
+import static tfc.collisionreversion.utils.CommonUtils.hasNoCollisions;
 
 @Mixin(Entity.class)
 public abstract class MixinEntity {
@@ -42,17 +42,19 @@ public abstract class MixinEntity {
 	@Shadow
 	protected abstract AxisAlignedBB getBoundingBox(Pose pose);
 	
-	@Shadow public abstract boolean equals(Object p_equals_1_);
+	@Shadow
+	public abstract boolean equals(Object p_equals_1_);
 	
 	@Unique
-	private final EntityMixinHelper mixinHelper = new EntityMixinHelper((Entity) (Object) this);
+	// ThreadLocal incase some mod makes collision async
+	private final ThreadLocal<EntityMixinHelper> mixinHelper = ThreadLocal.withInitial(() -> new EntityMixinHelper((Entity) (Object) this));
 	
 	@Inject(method = "getAllowedMovement(Lnet/minecraft/util/math/vector/Vector3d;)Lnet/minecraft/util/math/vector/Vector3d;", at = @At("HEAD"), cancellable = true)
 	public void LegacyCollision_preMove(Vector3d pos, CallbackInfoReturnable<Vector3d> cir) {
 		legacyVerticalCollision = EnumVCollisionType.NONE;
 		legacyHorizontalColiision = false;
 		// TODO:  migrate these two runnables to fields on EntityMixinHelper
-		mixinHelper.preMove(pos, (value) -> legacyVerticalCollision = value, (value) -> legacyHorizontalColiision = value);
+		mixinHelper.get().preMove(pos, (value) -> legacyVerticalCollision = value, (value) -> legacyHorizontalColiision = value);
 		if (Config.COMMON.cancelVanillaCollision.get()) cir.setReturnValue(pos);
 	}
 	

@@ -9,6 +9,7 @@ import net.minecraft.world.World;
 import net.minecraftforge.fml.loading.FMLEnvironment;
 import tfc.collisionreversion.LegacyAxisAlignedBB;
 import tfc.collisionreversion.api.CollisionReversionAPI;
+import tfc.collisionreversion.api.StepHeightGetter;
 import tfc.collisionreversion.api.lookup.CollisionLookup;
 import tfc.collisionreversion.api.lookup.LegacyContext;
 
@@ -18,7 +19,7 @@ import java.util.function.Consumer;
 import static tfc.collisionreversion.utils.CommonUtils.makeList;
 
 public class EntityMixinHelper {
-	Thread thread = Thread.currentThread();
+//	Thread thread = Thread.currentThread();
 	
 	private Entity entity;
 	private double stepHeight;
@@ -33,9 +34,9 @@ public class EntityMixinHelper {
 	}
 	
 	public void preMove(Vector3d vec, Consumer<EnumVCollisionType> verticalCollisionMarker, Consumer<Boolean> horizontalCollisionMarker) {
-		if (Thread.currentThread() != thread) throw new RuntimeException("Thread somehow changed");
+//		if (Thread.currentThread() != thread) throw new RuntimeException("Thread somehow changed");
 		if (!CollisionReversionAPI.useCollision() || getBoundingBox() == null) return;
-		stepHeight = entity.stepHeight;
+		stepHeight = StepHeightGetter.getStepHeightFor(entity);
 		world = entity.world;
 		List<LegacyAxisAlignedBB> boxes = getBoxes(vec);
 		calcMove(vec, boxes, verticalCollisionMarker, horizontalCollisionMarker);
@@ -324,7 +325,7 @@ public class EntityMixinHelper {
 	private final LegacyContext context = new LegacyContext();
 	
 	private List<LegacyAxisAlignedBB> getBoxes(Vector3d motion) {
-		if (Thread.currentThread() != thread) throw new RuntimeException("Thread somehow changed");
+//		if (Thread.currentThread() != thread) throw new RuntimeException("Thread somehow changed");
 		List<LegacyAxisAlignedBB> boxes = makeList();
 		{
 			List<AxisAlignedBB> boundingBoxes = makeList();
@@ -341,7 +342,7 @@ public class EntityMixinHelper {
 				for (int x = x1; x < x2; x++) {
 					for (int y = y1; y < y2; y++) {
 						for (int z = z1; z < z2; z++) {
-							if (Thread.currentThread() != thread) throw new RuntimeException("Thread somehow changed");
+//							if (Thread.currentThread() != thread) throw new RuntimeException("Thread somehow changed");
 							CollisionLookup.getBoundingBoxes(world, new BlockPos(x, y, z), entity, boundingBoxes, context, aabb, true);
 						}
 					}

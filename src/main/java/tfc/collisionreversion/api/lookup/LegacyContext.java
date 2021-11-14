@@ -84,6 +84,7 @@ public class LegacyContext implements ILegacyContext {
 	
 	@Override
 	public boolean raytrace(AxisAlignedBB bb) {
-		return bb.rayTrace(start, end).isPresent();
+		if (start != null && end != null) return bb.rayTrace(start, end).isPresent();
+		return false;
 	}
 }

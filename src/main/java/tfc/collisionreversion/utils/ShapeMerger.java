@@ -2,9 +2,7 @@ package tfc.collisionreversion.utils;
 
 import com.mojang.datafixers.util.Pair;
 import net.minecraft.util.math.AxisAlignedBB;
-import net.minecraft.util.math.shapes.VoxelShapes;
 
-import java.util.ArrayList;
 import java.util.List;
 
 /**
@@ -25,6 +23,7 @@ public class ShapeMerger {
 		checkMerge();
 	}
 	
+	// TODO: optimize this more
 	public boolean checkMerge() {
 		boolean mergedAny = false;
 		List<AxisAlignedBB> out = CommonUtils.makeList();
@@ -57,6 +56,13 @@ public class ShapeMerger {
 	}
 	
 	private Pair<AxisAlignedBB, AxisAlignedBB> merge(AxisAlignedBB box1, AxisAlignedBB box2) {
+		if (box1.contains(box2.minX, box2.minY, box2.minZ) &&
+				box1.contains(box2.maxX, box2.maxY, box2.maxZ))
+			return Pair.of(box1, null);
+		if (box2.contains(box1.minX, box1.minY, box1.minZ) &&
+				box2.contains(box1.maxX, box1.maxY, box1.maxZ))
+			return Pair.of(box2, null);
+		
 		if (
 				box1.maxZ == box2.maxZ &&
 						box1.minZ == box2.minZ &&
@@ -90,11 +96,12 @@ public class ShapeMerger {
 			else if (box2.maxY == box1.minY)
 				return Pair.of(new AxisAlignedBB(box1.minX, box2.minY, box1.minZ, box2.maxX, box1.maxY, box2.maxZ), null);
 		}
+		
 		return Pair.of(box1, box2);
 	}
 	
 	public void finish() {
-		while (checkMerge());
+		while (checkMerge()) ;
 		boxesOut.addAll(workerList);
 	}
 }
