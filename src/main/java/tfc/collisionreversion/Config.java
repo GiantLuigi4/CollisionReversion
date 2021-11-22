@@ -4,6 +4,8 @@ import net.minecraftforge.common.ForgeConfigSpec;
 import net.minecraftforge.fml.loading.FMLEnvironment;
 import org.apache.commons.lang3.tuple.Pair;
 
+import java.util.Arrays;
+
 public class Config {
 	public static final Config COMMON;
 	static final ForgeConfigSpec commonSpec;
@@ -23,6 +25,15 @@ public class Config {
 	
 	/* Selection Options */
 	public final ForgeConfigSpec.BooleanValue useSelectionReversion;
+	
+	/* Visual Shape Options */
+	public final ForgeConfigSpec.BooleanValue useVisualShapeReversion;
+	
+	/* list options */
+	public final ForgeConfigSpec.EnumValue<EnumDefaultedBoolean> allowCustomList;
+	public final ForgeConfigSpec.EnumValue<EnumListType> listType;
+	public final ForgeConfigSpec.IntValue minGrowth;
+	public final ForgeConfigSpec.IntValue listGrowthRate;
 	
 	/* Dev Envro Options */
 	public final DevOptions devOptions;
@@ -94,6 +105,57 @@ public class Config {
 		}
 		
 		{
+			builder.comment("Visual Shape Settings").push("visual shape");
+			
+			useVisualShapeReversion = builder
+					.comment("If the mod show allow visual (third person camera obstructing) shape reversion")
+					.translation("config.collisionreversion.visual")
+					.define("VisualShapeReversion", true);
+			
+			builder.pop();
+		}
+		
+		{
+			builder.comment("List Settings").push("lists");
+			
+			{
+				EnumDefaultedBoolean[] acceptableValues = EnumDefaultedBoolean.values();
+				allowCustomList = defineEnum(
+						builder
+								.comment("Collision Reversion has it's own array list implementation, which can sometimes outperform the standard JDK's array list implementation.")
+								.translation("config.collisionreversion.allow_custom_arraylist"),
+						"CustomArrayList", acceptableValues);
+			}
+			
+			{
+				EnumListType[] acceptableValues = EnumListType.values();
+				listType = defineEnum(
+						builder
+								.comment("NoCommentYet")
+								.translation("config.collisionreversion.list_type"),
+						"ListType", acceptableValues);
+			}
+			
+			{
+				builder.comment("Custom List Options").push("custom_list");
+				
+				listGrowthRate = builder
+						.comment("When a list is expanded, it doesn't gain one single element, it gains multiple elements.\nThis option is the number to multiply the length by each time the list must be expanded.")
+						.translation("config.collisionreversion.growth_multiplier")
+						.defineInRange("GrowthMultiplier", 3, 2, 100);
+				
+				minGrowth = builder
+						.comment("Minimum amount to expand the list by when a new element is added")
+						.translation("config.collisionreversion.min_growth")
+						.defineInRange("MinGrowth", 1, 1, 1000);
+				
+				builder.pop();
+			}
+			
+			builder.pop();
+		}
+		
+		{
 			builder.comment("Collision Settings").push("collision");
 			
 			useCollisionReversion = builder
@@ -116,5 +178,9 @@ public class Config {
 		
 		if (!FMLEnvironment.production) devOptions = new DevOptions(builder);
 		else devOptions = null;
+	}
+	
+	private static <T extends Enum<T>> ForgeConfigSpec.EnumValue<T> defineEnum(ForgeConfigSpec.Builder builder, String name, T[] values) {
+		return builder.defineEnum(name, (T) values[0], Arrays.asList(values));
 	}
 }

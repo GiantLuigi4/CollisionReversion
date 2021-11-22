@@ -56,6 +56,9 @@ minecraft {
 
             arg "-mixin.config=CollisionReversion.mixins.json"
 
+            property 'mixin.env.remapRefMap', 'true'
+            property 'mixin.env.refMapRemappingFile', "${projectDir}/build/createSrgToMcp/output.srg"
+
             mods {
                 collision_reversion {
                     source sourceSets.main
@@ -77,6 +80,9 @@ minecraft {
             // You can set various levels here.
             // Please read: https://stackoverflow.com/questions/2031163/when-to-use-the-different-log-levels
             property 'forge.logging.console.level', 'debug'
+
+            property 'mixin.env.remapRefMap', 'true'
+            property 'mixin.env.refMapRemappingFile', "${projectDir}/build/createSrgToMcp/output.srg"
 
             arg "-mixin.config=CollisionReversion.mixins.json"
 
@@ -136,6 +142,8 @@ dependencies {
     minecraft 'net.minecraftforge:forge:1.16.5-36.2.2'
     runtimeOnly fg.deobf('curse.maven:the_one_probe-245211:3319255')
     runtimeOnly fg.deobf('curse.maven:hwyla-3033613:3033593')
+
+    compile fg.deobf('curse.maven:pehkui-319596:3351969')
 
     // You may put jars on which you depend on in ./libs or you may define them like so..
     // compile "some.group:artifact:version:classifier"

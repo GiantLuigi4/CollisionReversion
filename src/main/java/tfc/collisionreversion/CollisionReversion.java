@@ -7,6 +7,8 @@ import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.shapes.ISelectionContext;
 import net.minecraft.util.math.shapes.VoxelShape;
 import net.minecraft.util.math.vector.Vector3d;
+import net.minecraftforge.common.MinecraftForge;
+import net.minecraftforge.fml.ModList;
 import net.minecraftforge.fml.ModLoadingContext;
 import net.minecraftforge.fml.common.Mod;
 import net.minecraftforge.fml.config.ModConfig;
@@ -15,6 +17,8 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import tfc.collisionreversion.api.lookup.CollisionLookup;
 import tfc.collisionreversion.api.lookup.SelectionLookup;
+import tfc.collisionreversion.utils.CustomArrayList;
+import tfc.collisionreversion.utils.integration.PehkuiIntegration;
 
 import java.util.List;
 
@@ -25,8 +29,19 @@ public class CollisionReversion {
 	// Directly reference a log4j logger.
 	private static final Logger LOGGER = LogManager.getLogger();
 	
+	public static void onConfigEvent(ModConfig.ModConfigEvent event) {
+		if (event.getConfig().getModId().equals("collision_reversion")) {
+			CustomArrayList.growthRate = Config.COMMON.listGrowthRate.get() - 1;
+			CustomArrayList.minGrowth = Config.COMMON.minGrowth.get();
+		}
+	}
+	
 	public CollisionReversion() {
+		if (ModList.get().isLoaded("pehkui")) PehkuiIntegration.setup();
+		
 		ModLoadingContext.get().registerConfig(ModConfig.Type.COMMON, Config.commonSpec);
+		
+		MinecraftForge.EVENT_BUS.addListener(CollisionReversion::onConfigEvent);
 		
 		CollisionLookup.registerBoxFiller((context)->{
 			if (Config.COMMON.globalLegacy.get() || Config.COMMON.cancelVanillaCollision.get()) {

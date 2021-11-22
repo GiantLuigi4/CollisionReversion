@@ -3,7 +3,6 @@ package tfc.collisionreversion.mixin;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.MoverType;
 import net.minecraft.entity.player.PlayerEntity;
-import net.minecraft.server.management.PlayerList;
 import net.minecraft.util.math.AxisAlignedBB;
 import net.minecraft.util.math.vector.Vector3d;
 import net.minecraft.world.World;
@@ -15,31 +14,39 @@ import org.spongepowered.asm.mixin.injection.ModifyArgs;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 import org.spongepowered.asm.mixin.injection.invoke.arg.Args;
 import tfc.collisionreversion.api.CollisionReversionAPI;
+import tfc.collisionreversion.api.StepHeightGetter;
 
-import static tfc.collisionreversion.utils.CommonUtils.*;
+import static tfc.collisionreversion.utils.CommonUtils.hasNoCollisions;
 
 @Mixin(value = PlayerEntity.class, priority = -1000)
 public class PlayerEntityMixin {
-	@Unique Vector3d LegacyCollision_vec;
-	@Unique	World LegacyCollision_world;
-	@Unique	AxisAlignedBB LegacyCollision_boundingBox;
-	@Unique	double LegacyCollision_stepHeight;
+	@Unique
+	Vector3d LegacyCollision_vec;
+	@Unique
+	World LegacyCollision_world;
+	@Unique
+	AxisAlignedBB LegacyCollision_boundingBox;
+	@Unique
+	double LegacyCollision_stepHeight;
 	
 	@Inject(at = @At("HEAD"), method = "maybeBackOffFromEdge")
 	public void LegacyCollision_preBackOffFromEdge(Vector3d vec, MoverType mover, CallbackInfoReturnable<Vector3d> cir) {
 		if (!CollisionReversionAPI.useCollision()) return;
 		this.LegacyCollision_vec = vec;
-		this.LegacyCollision_world = ((Entity)(Object)this).world;
-		this.LegacyCollision_boundingBox = ((Entity)(Object)this).getBoundingBox();
+		this.LegacyCollision_world = ((Entity) (Object) this).world;
+		this.LegacyCollision_boundingBox = ((Entity) (Object) this).getBoundingBox();
+		LegacyCollision_stepHeight = StepHeightGetter.getStepHeightFor((Entity) (Object) this);
 	}
 	
-	@ModifyArgs(at = @At(value = "INVOKE", target = "Lnet/minecraft/util/math/AxisAlignedBB;offset(DDD)Lnet/minecraft/util/math/AxisAlignedBB;"), method = "maybeBackOffFromEdge")
-	public void LegacyCollision_preOffset(Args args) {
-		if (!CollisionReversionAPI.useCollision()) return;
-		if (((Object)this) instanceof PlayerList) return;
-		LegacyCollision_stepHeight = args.get(1);
-		LegacyCollision_stepHeight *= -1;
-	}
+//	@ModifyArgs(at = @At(value = "INVOKE", target = "Lnet/minecraft/util/math/AxisAlignedBB;offset(DDD)Lnet/minecraft/util/math/AxisAlignedBB;"), method = "maybeBackOffFromEdge")
+//	public void LegacyCollision_preOffset(Args args) {
+//		if (!CollisionReversionAPI.useCollision()) return;
+//		if (((Object) this) instanceof PlayerList) return;
+////		LegacyCollision_stepHeight = args.get(1);
+////		LegacyCollision_stepHeight *= -1;
+////		LegacyCollision_stepHeight = ((Entity) (Object) this).stepHeight;
+//		LegacyCollision_stepHeight = StepHeightGetter.getStepHeightFor((Entity) (Object) this);
+//	}
 	
 	// TODO: see if there's maybe a way to optimize this, as this seems slow
 	@ModifyArgs(at = @At(value = "INVOKE", target = "Lnet/minecraft/util/math/vector/Vector3d;<init>(DDD)V"), method = "maybeBackOffFromEdge")

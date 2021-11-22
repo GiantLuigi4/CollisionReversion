@@ -56,6 +56,7 @@ public abstract class MixinEntity {
 		// TODO:  migrate these two runnables to fields on EntityMixinHelper
 		mixinHelper.get().preMove(pos, (value) -> legacyVerticalCollision = value, (value) -> legacyHorizontalColiision = value);
 		if (Config.COMMON.cancelVanillaCollision.get()) cir.setReturnValue(pos);
+		mixinHelper.remove(); // attempt to help prevent a potential memory leak if a mod decides to multithread collision logic
 	}
 	
 	@Inject(at = @At(value = "INVOKE", target = "Lnet/minecraft/entity/Entity;updateFallState(DZLnet/minecraft/block/BlockState;Lnet/minecraft/util/math/BlockPos;)V"), method = "move")

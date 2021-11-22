@@ -3,6 +3,7 @@ package tfc.collisionreversion.api.lookup;
 import net.minecraft.entity.Entity;
 import net.minecraft.util.math.AxisAlignedBB;
 import net.minecraft.util.math.BlockPos;
+import net.minecraft.util.math.vector.Vector3d;
 import net.minecraft.world.World;
 import tfc.collisionreversion.api.IContextConsumer;
 import tfc.collisionreversion.api.ILegacyContext;
@@ -11,13 +12,13 @@ import java.util.ArrayList;
 import java.util.List;
 
 /**
- * Collision boxes can be collided with (duh)
- * Add a box to this will add a wall which entities cannot pass through
+ * visual shape is what the third person camera raytraces against
+ * adding boxes to this will add a box which will obstruct the camera
  */
-public class CollisionLookup {
+public class VisualShapeLookup {
 	private static final ArrayList<IContextConsumer<ILegacyContext>> boxFillers = new ArrayList<>();
 	
-	public static List<AxisAlignedBB> getBoundingBoxes(World world, BlockPos pos, Entity entity, List<AxisAlignedBB> boundingBoxes, LegacyContext context, AxisAlignedBB box, boolean checkBox) {
+	public static List<AxisAlignedBB> getBoundingBoxes(World world, BlockPos pos, Entity entity, List<AxisAlignedBB> boundingBoxes, LegacyContext context, AxisAlignedBB box, Vector3d start, Vector3d end) {
 		for (IContextConsumer<ILegacyContext> boxFiller : boxFillers) {
 			context.boxes = boundingBoxes;
 			context.pos = pos;
@@ -25,10 +26,11 @@ public class CollisionLookup {
 			context.entity = entity;
 			context.state = null;
 			context.motionBox = box;
-			context.boxCheck = checkBox;
+			context.boxCheck = false;
+			context.start = start;
+			context.end = end;
 			boxFiller.accept(context);
 		}
-		// TODO: optimize collision shapes
 		return boundingBoxes;
 	}
 	

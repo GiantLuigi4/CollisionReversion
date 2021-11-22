@@ -72,8 +72,13 @@ public class CustomArrayList<T> implements List<T> {
 		return true;
 	}
 	
+	public static int growthRate = 1;
+	public static int minGrowth = 50;
+	
 	private void ensureCapacity() {
-		if (elements.length <= (length + 1)) elements = Arrays.copyOf(elements, length + Math.max(length * 2, 50));
+		int alen = elements.length;
+		if (alen == 0) elements = (T[]) new Object[minGrowth];
+		else if (alen <= (length + 1)) elements = Arrays.copyOf(elements, length + (length * growthRate));
 	}
 	
 	@Override

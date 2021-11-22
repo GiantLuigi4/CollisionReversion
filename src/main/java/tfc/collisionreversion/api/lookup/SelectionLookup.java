@@ -11,6 +11,10 @@ import tfc.collisionreversion.api.ILegacyContext;
 import java.util.ArrayList;
 import java.util.List;
 
+/**
+ * Selection shapes is what the cursor raytraces over
+ * Adding a box to this will add a box which can be selected by the player to select the targetted block
+ */
 public class SelectionLookup {
 	private static final ArrayList<IContextConsumer<ILegacyContext>> boxFillers = new ArrayList<>();
 	

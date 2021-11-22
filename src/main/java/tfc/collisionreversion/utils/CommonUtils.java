@@ -3,15 +3,20 @@ package tfc.collisionreversion.utils;
 import it.unimi.dsi.fastutil.objects.ObjectArrayList;
 import it.unimi.dsi.fastutil.objects.ReferenceArrayList;
 import net.minecraft.entity.Entity;
+import net.minecraft.util.NonNullList;
 import net.minecraft.util.math.AxisAlignedBB;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.MathHelper;
 import net.minecraft.world.World;
+import tfc.collisionreversion.Config;
 import tfc.collisionreversion.LegacyAxisAlignedBB;
 import tfc.collisionreversion.api.lookup.CollisionLookup;
 import tfc.collisionreversion.api.lookup.LegacyContext;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.Vector;
 
 public class CommonUtils {
 	public static boolean hasNoCollisions(Entity entity, AxisAlignedBB aabb) {
@@ -30,6 +35,7 @@ public class CommonUtils {
 					for (int z = z1; z < z2; z++) {
 						BlockPos pos = new BlockPos(x, y, z);
 						CollisionLookup.getBoundingBoxes(world, pos, entity, boundingBoxes, context, aabb, false);
+						// why don't I use enhanced? lol
 						for (int i = 0; i < boundingBoxes.size(); i++) {
 							AxisAlignedBB boundingBox = boundingBoxes.get(i);
 							if (boundingBox == null) continue;
@@ -42,7 +48,7 @@ public class CommonUtils {
 		}
 		return true;
 	}
-
+	
 	private static final boolean isJ8 = System.getProperty("java.specification.version").equals("1.8");
 	// I would have J9 here, but apparently my J9 is J12
 	private static final boolean isJ12 = System.getProperty("java.specification.version").equals("12");
@@ -55,21 +61,52 @@ public class CommonUtils {
 	private static boolean useOptimizedList = (isJ8 || isJ16) && isGraal;
 	
 	/**
-	* this was interesting to look into
-	*
-	* tested with 98304 elements, adding 1 element at a time
-	*
-	* on J8 ReferenceArrayList performs the best
+	 * this was interesting to look into
+	 * <p>
+	 * tested with 98304 elements, adding 1 element at a time
+	 * <p>
+	 * on J8 ReferenceArrayList performs the best
 	 * on J11, CustomArrayList performs the best
 	 * on J12, ObjectArrayList performs the best
 	 * can't remember why I set J16 to use ReferenceArrayList
-	*/
+	 */
 	public static <T> List<T> makeList() {
-		if (!useOptimizedList) {
-			if (isJ16 || isJ8) return new ReferenceArrayList<>();
-			else if (isJ12) return new ObjectArrayList<>();
+		switch (Config.COMMON.listType.get()) {
+			case AUTO:
+				switch (Config.COMMON.allowCustomList.get()) {
+					case ON: {
+						return new CustomArrayList<>();
+						
+					}
+					case OFF: {
+						if (isJ16 || isJ8) return new ReferenceArrayList<>();
+						else if (isJ12) return new ObjectArrayList<>();
+						else return new ArrayList<>(); // TODO: benchmark
+					}
+					case AUTO: {
+						if (!useOptimizedList) {
+							if (isJ16 || isJ8) return new ReferenceArrayList<>();
+							else if (isJ12) return new ObjectArrayList<>();
+							else return new ArrayList<>(); // TODO: benchmark
+						}
+						return new CustomArrayList<>();
+					}
+				}
+			case ARRAY:
+				return new ArrayList<>();
+			case CUSTOM:
+				return new CustomArrayList<>();
+			case LINKED:
+				return new LinkedList<>();
+			case OBJECT:
+				return new ObjectArrayList<>();
+			case VECTOR:
+				return new Vector<>();
+			case REFERENCE:
+				return new ReferenceArrayList<>();
+			default:
+				return NonNullList.create(); // this'll literally never be called, so yes
 		}
-		return new CustomArrayList<>();
 //		return new ReferenceArrayList<>();
 //		return NonNullList.create();
 //		return new ArrayList<>();

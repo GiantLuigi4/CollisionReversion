@@ -66,6 +66,8 @@ public class EntityMixinHelper {
 	}
 	
 	private AxisAlignedBB handleStepAssist(AxisAlignedBB workerBB, Vector3d motion, List<LegacyAxisAlignedBB> boxes, Consumer<EnumVCollisionType> verticalCollisionMarker, Consumer<Boolean> horizontalCollisionMarker, AxisAlignedBB fallbackBB) {
+		if (motion.x == 0 && motion.z == 0) return workerBB;
+		
 		boolean stepX = stepResult.stepUpX;
 		boolean stepZ = stepResult.stepUpZ;
 		if (!stepX && !stepZ) return workerBB;
@@ -120,7 +122,8 @@ public class EntityMixinHelper {
 		if (y != 0) {
 			for (LegacyAxisAlignedBB box : boxes) {
 				double newYOut = box.calculateYOffset(workerBB, yOut);
-				if (Math.abs(newYOut) < Math.abs(yOut)) yOut = newYOut;
+//				if (Math.abs(newYOut) < Math.abs(yOut)) yOut = newYOut;
+				if (newYOut != yOut) yOut = newYOut;
 //				y = box.calculateYOffset(workerBB, y);
 				if (yOut != motion.y) {
 //				if (y != motion.y) {
@@ -179,7 +182,8 @@ public class EntityMixinHelper {
 			if (xOut != x && zOut != z) {
 				if (Math.abs(xOut) == Math.abs(zOut)) {
 //					workerBB = workerBB.offset(xOut, 0, zOut);
-					motion.x = motion.z = x = z = 0;
+//					motion.x = motion.z = x = z = 0;
+					motion.x = motion.z = 0;
 					break;
 				}
 			}
@@ -219,8 +223,10 @@ public class EntityMixinHelper {
 			for (LegacyAxisAlignedBB box : boxes) {
 				if (box == null) continue;
 				double newYOut = box.calculateYOffset(workerBB, yOut);
-				if (Math.abs(newYOut) < Math.abs(yOut)) yOut = newYOut;
+//				if (Math.abs(newYOut) < Math.abs(yOut)) yOut = newYOut;
 ////				y = box.calculateYOffset(workerBB, y);
+				// abs is redundant, what you on about self
+				if (yOut != newYOut) yOut = newYOut;
 				if (yOut != motion.y) {
 ////				if (y != motion.y) {
 ////					workerBB = workerBB.offset(0, y, 0);

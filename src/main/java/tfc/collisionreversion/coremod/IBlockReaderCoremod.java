@@ -7,9 +7,11 @@ import net.minecraft.util.math.*;
 import net.minecraft.util.math.vector.Vector3d;
 import net.minecraft.world.World;
 import tfc.collisionreversion.Config;
+import tfc.collisionreversion.EnumDefaultedBoolean;
 import tfc.collisionreversion.api.lookup.CollisionLookup;
 import tfc.collisionreversion.api.lookup.LegacyContext;
 import tfc.collisionreversion.api.lookup.SelectionLookup;
+import tfc.collisionreversion.api.lookup.VisualShapeLookup;
 
 import java.util.List;
 
@@ -19,13 +21,17 @@ public class IBlockReaderCoremod {
 	public static BlockRayTraceResult raytraceLegacy(BlockRayTraceResult result, RayTraceContext context) {
 		boolean selectionReversion = Config.COMMON.useSelectionReversion.get();
 		boolean collisionReversion = Config.COMMON.useCollisionReversion.get();
-		if (!selectionReversion && !collisionReversion) return result;
+		boolean visualShapeReversion = Config.COMMON.useVisualShapeReversion.get();
+		if (!selectionReversion && !collisionReversion && !visualShapeReversion) return result;
 		switch (context.blockMode) {
 			case COLLIDER:
 				if (!collisionReversion) return result;
 				break;
 			case OUTLINE:
 				if (!selectionReversion) return result;
+				break;
+			case VISUAL:
+				if (!visualShapeReversion) return result;
 				break;
 			default:
 				return result;
@@ -39,17 +45,20 @@ public class IBlockReaderCoremod {
 		if (entity != null) world = entity.getEntityWorld();
 		switch (context.blockMode) {
 			case OUTLINE:
-				result1 = raytrace(eyeVec, endVec, true, bestDist, world, entity);
+				result1 = raytrace(eyeVec, endVec, EnumDefaultedBoolean.ON, bestDist, world, entity);
 				break;
 			case COLLIDER:
-				result1 = raytrace(eyeVec, endVec, false, bestDist, world, entity);
+				result1 = raytrace(eyeVec, endVec, EnumDefaultedBoolean.OFF, bestDist, world, entity);
+				break;
+			case VISUAL:
+				result1 = raytrace(eyeVec, endVec, EnumDefaultedBoolean.AUTO, bestDist, world, entity);
 				break;
 		}
 		if (result1 == null) return result;
 		return result1;
 	}
 	
-	private static BlockRayTraceResult raytrace(Vector3d eyeVec, Vector3d endVec, boolean selection, double bestDist, World world, Entity entity) {
+	private static BlockRayTraceResult raytrace(Vector3d eyeVec, Vector3d endVec, EnumDefaultedBoolean selection, double bestDist, World world, Entity entity) {
 		BlockRayTraceResult bestResult = null;
 		{
 			{
@@ -74,8 +83,12 @@ public class IBlockReaderCoremod {
 							((PlayerEntity) entity).setArrowCountInEntity(0);
 						}
 						BlockPos pos = new BlockPos(x, y, z);
-						if (selection) SelectionLookup.getBoundingBoxes(world, pos, entity, boundingBoxes, context, region, eyeVec, endVec);
-						else CollisionLookup.getBoundingBoxes(world, pos, entity, boundingBoxes, context, region, true);
+						if (selection == EnumDefaultedBoolean.ON)
+							SelectionLookup.getBoundingBoxes(world, pos, entity, boundingBoxes, context, region, eyeVec, endVec);
+						else if (selection == EnumDefaultedBoolean.OFF)
+							CollisionLookup.getBoundingBoxes(world, pos, entity, boundingBoxes, context, region, true);
+						else
+							VisualShapeLookup.getBoundingBoxes(world, pos, entity, boundingBoxes, context, region, eyeVec, endVec);
 						boolean invertFace = false;
 						for (int i = 0; i < boundingBoxes.size(); i++) {
 							AxisAlignedBB bb = boundingBoxes.get(i);
