@@ -14,6 +14,7 @@ import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 import tfc.collisionreversion.Config;
+import tfc.collisionreversion.api.CollisionReversionAPI;
 import tfc.collisionreversion.utils.EntityMixinHelper;
 import tfc.collisionreversion.utils.EnumVCollisionType;
 
@@ -51,6 +52,7 @@ public abstract class MixinEntity {
 	
 	@Inject(method = "getAllowedMovement(Lnet/minecraft/util/math/vector/Vector3d;)Lnet/minecraft/util/math/vector/Vector3d;", at = @At("HEAD"), cancellable = true)
 	public void LegacyCollision_preMove(Vector3d pos, CallbackInfoReturnable<Vector3d> cir) {
+		if (!CollisionReversionAPI.useCollision()) return;
 		legacyVerticalCollision = EnumVCollisionType.NONE;
 		legacyHorizontalColiision = false;
 		// TODO:  migrate these two runnables to fields on EntityMixinHelper
@@ -61,6 +63,7 @@ public abstract class MixinEntity {
 	
 	@Inject(at = @At(value = "INVOKE", target = "Lnet/minecraft/entity/Entity;updateFallState(DZLnet/minecraft/block/BlockState;Lnet/minecraft/util/math/BlockPos;)V"), method = "move")
 	public void LegacyCollision_preUpdateFallState(MoverType typeIn, Vector3d pos, CallbackInfo ci) {
+		if (!CollisionReversionAPI.useCollision()) return;
 		if (legacyVerticalCollision == EnumVCollisionType.FLOOR) {
 			onGround = true;
 			collidedVertically = true;
@@ -70,6 +73,7 @@ public abstract class MixinEntity {
 	
 	@Inject(at = @At("HEAD"), method = "isPoseClear", cancellable = true)
 	public void LegacyCollision_preCheckPoseClear(Pose pose, CallbackInfoReturnable<Boolean> cir) {
+		if (!CollisionReversionAPI.useCollision()) return;
 		AxisAlignedBB shrunkBB = getBoundingBox(pose).shrink(1.0E-7D);
 		if (
 				!hasNoCollisions((Entity) (Object) this, shrunkBB)
