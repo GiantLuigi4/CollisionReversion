@@ -4,11 +4,7 @@
   "package": "tfc.collisionreversion.mixin",
   "compatibilityLevel": "JAVA_8",
   "refmap": "CollisionReversion.refmap.json",
-  "mixins": [
-    "MixinEntity",
-    "PlayerEntityMixin",
-    "GameRendererMixin"
-  ],
+  "mixins": ["AxisAlignedBBMixin", "GameRendererMixin", "MixinEntity", "PlayerEntityMixin"],
   "client": [
   ],
   "injectors": {

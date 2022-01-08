@@ -5,6 +5,7 @@ import net.minecraft.entity.Entity;
 import net.minecraft.util.math.AxisAlignedBB;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.shapes.ISelectionContext;
+import net.minecraft.util.math.vector.Vector3d;
 import net.minecraft.world.World;
 
 import java.util.List;
@@ -41,4 +42,7 @@ public interface ILegacyContext {
 	boolean checkBoundingBox(AxisAlignedBB box);
 	
 	boolean raytrace(AxisAlignedBB bb);
+	
+	Vector3d getStart();
+	Vector3d getEnd();
 }

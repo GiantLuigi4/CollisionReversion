@@ -87,4 +87,14 @@ public class LegacyContext implements ILegacyContext {
 		if (start != null && end != null) return bb.rayTrace(start, end).isPresent();
 		return false;
 	}
+	
+	@Override
+	public Vector3d getStart() {
+		return start;
+	}
+	
+	@Override
+	public Vector3d getEnd() {
+		return end;
+	}
 }

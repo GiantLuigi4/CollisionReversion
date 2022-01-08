@@ -12,6 +12,8 @@ import net.minecraftforge.fml.ModList;
 import net.minecraftforge.fml.ModLoadingContext;
 import net.minecraftforge.fml.common.Mod;
 import net.minecraftforge.fml.config.ModConfig;
+import net.minecraftforge.fml.event.lifecycle.FMLCommonSetupEvent;
+import net.minecraftforge.fml.javafmlmod.FMLJavaModLoadingContext;
 import net.minecraftforge.fml.loading.FMLEnvironment;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -29,6 +31,10 @@ public class CollisionReversion {
 	// Directly reference a log4j logger.
 	private static final Logger LOGGER = LogManager.getLogger();
 	
+	public static void onCommonSetup(FMLCommonSetupEvent event) {
+		if (ModList.get().isLoaded("pehkui")) PehkuiIntegration.setup();
+	}
+	
 	public static void onConfigEvent(ModConfig.ModConfigEvent event) {
 		if (event.getConfig().getModId().equals("collision_reversion")) {
 			CustomArrayList.growthRate = Config.COMMON.listGrowthRate.get() - 1;
@@ -37,9 +43,8 @@ public class CollisionReversion {
 	}
 	
 	public CollisionReversion() {
-		if (ModList.get().isLoaded("pehkui")) PehkuiIntegration.setup();
-		
 		ModLoadingContext.get().registerConfig(ModConfig.Type.COMMON, Config.commonSpec);
+		FMLJavaModLoadingContext.get().getModEventBus().addListener(CollisionReversion::onCommonSetup);
 		
 		MinecraftForge.EVENT_BUS.addListener(CollisionReversion::onConfigEvent);
 		

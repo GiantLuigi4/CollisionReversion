@@ -1,0 +1,44 @@
+{
+  "mappings": {
+    "tfc/collisionreversion/mixin/AxisAlignedBBMixin": {
+      "rayTrace(Lnet/minecraft/util/math/vector/Vector3d;Lnet/minecraft/util/math/vector/Vector3d;)Ljava/util/Optional;": "Lnet/minecraft/util/math/AxisAlignedBB;func_216365_b(Lnet/minecraft/util/math/vector/Vector3d;Lnet/minecraft/util/math/vector/Vector3d;)Ljava/util/Optional;",
+      "rayTrace(Ljava/lang/Iterable;Lnet/minecraft/util/math/vector/Vector3d;Lnet/minecraft/util/math/vector/Vector3d;Lnet/minecraft/util/math/BlockPos;)Lnet/minecraft/util/math/BlockRayTraceResult;": "Lnet/minecraft/util/math/AxisAlignedBB;func_197743_a(Ljava/lang/Iterable;Lnet/minecraft/util/math/vector/Vector3d;Lnet/minecraft/util/math/vector/Vector3d;Lnet/minecraft/util/math/BlockPos;)Lnet/minecraft/util/math/BlockRayTraceResult;",
+      "calcSideHit": "Lnet/minecraft/util/math/AxisAlignedBB;func_197741_a(Lnet/minecraft/util/math/AxisAlignedBB;Lnet/minecraft/util/math/vector/Vector3d;[DLnet/minecraft/util/Direction;DDD)Lnet/minecraft/util/Direction;"
+    },
+    "tfc/collisionreversion/mixin/PlayerEntityMixin": {
+      "maybeBackOffFromEdge": "Lnet/minecraft/entity/player/PlayerEntity;func_225514_a_(Lnet/minecraft/util/math/vector/Vector3d;Lnet/minecraft/entity/MoverType;)Lnet/minecraft/util/math/vector/Vector3d;"
+    },
+    "tfc/collisionreversion/mixin/GameRendererMixin": {
+      "getMouseOver": "Lnet/minecraft/client/renderer/GameRenderer;func_78473_a(F)V"
+    },
+    "tfc/collisionreversion/mixin/MixinEntity": {
+      "getBoundingBox": "Lnet/minecraft/entity/Entity;getBoundingBox(Lnet/minecraft/entity/Pose;)Lnet/minecraft/util/math/AxisAlignedBB;",
+      "move": "Lnet/minecraft/entity/Entity;func_213315_a(Lnet/minecraft/entity/MoverType;Lnet/minecraft/util/math/vector/Vector3d;)V",
+      "getAllowedMovement(Lnet/minecraft/util/math/vector/Vector3d;)Lnet/minecraft/util/math/vector/Vector3d;": "Lnet/minecraft/entity/Entity;func_213306_e(Lnet/minecraft/util/math/vector/Vector3d;)Lnet/minecraft/util/math/vector/Vector3d;",
+      "isPoseClear": "Lnet/minecraft/entity/Entity;func_213298_c(Lnet/minecraft/entity/Pose;)Z",
+      "Lnet/minecraft/entity/Entity;updateFallState(DZLnet/minecraft/block/BlockState;Lnet/minecraft/util/math/BlockPos;)V": "Lnet/minecraft/entity/Entity;func_184231_a(DZLnet/minecraft/block/BlockState;Lnet/minecraft/util/math/BlockPos;)V"
+    }
+  },
+  "data": {
+    "searge": {
+      "tfc/collisionreversion/mixin/AxisAlignedBBMixin": {
+        "rayTrace(Lnet/minecraft/util/math/vector/Vector3d;Lnet/minecraft/util/math/vector/Vector3d;)Ljava/util/Optional;": "Lnet/minecraft/util/math/AxisAlignedBB;func_216365_b(Lnet/minecraft/util/math/vector/Vector3d;Lnet/minecraft/util/math/vector/Vector3d;)Ljava/util/Optional;",
+        "rayTrace(Ljava/lang/Iterable;Lnet/minecraft/util/math/vector/Vector3d;Lnet/minecraft/util/math/vector/Vector3d;Lnet/minecraft/util/math/BlockPos;)Lnet/minecraft/util/math/BlockRayTraceResult;": "Lnet/minecraft/util/math/AxisAlignedBB;func_197743_a(Ljava/lang/Iterable;Lnet/minecraft/util/math/vector/Vector3d;Lnet/minecraft/util/math/vector/Vector3d;Lnet/minecraft/util/math/BlockPos;)Lnet/minecraft/util/math/BlockRayTraceResult;",
+        "calcSideHit": "Lnet/minecraft/util/math/AxisAlignedBB;func_197741_a(Lnet/minecraft/util/math/AxisAlignedBB;Lnet/minecraft/util/math/vector/Vector3d;[DLnet/minecraft/util/Direction;DDD)Lnet/minecraft/util/Direction;"
+      },
+      "tfc/collisionreversion/mixin/PlayerEntityMixin": {
+        "maybeBackOffFromEdge": "Lnet/minecraft/entity/player/PlayerEntity;func_225514_a_(Lnet/minecraft/util/math/vector/Vector3d;Lnet/minecraft/entity/MoverType;)Lnet/minecraft/util/math/vector/Vector3d;"
+      },
+      "tfc/collisionreversion/mixin/GameRendererMixin": {
+        "getMouseOver": "Lnet/minecraft/client/renderer/GameRenderer;func_78473_a(F)V"
+      },
+      "tfc/collisionreversion/mixin/MixinEntity": {
+        "getBoundingBox": "Lnet/minecraft/entity/Entity;getBoundingBox(Lnet/minecraft/entity/Pose;)Lnet/minecraft/util/math/AxisAlignedBB;",
+        "move": "Lnet/minecraft/entity/Entity;func_213315_a(Lnet/minecraft/entity/MoverType;Lnet/minecraft/util/math/vector/Vector3d;)V",
+        "getAllowedMovement(Lnet/minecraft/util/math/vector/Vector3d;)Lnet/minecraft/util/math/vector/Vector3d;": "Lnet/minecraft/entity/Entity;func_213306_e(Lnet/minecraft/util/math/vector/Vector3d;)Lnet/minecraft/util/math/vector/Vector3d;",
+        "isPoseClear": "Lnet/minecraft/entity/Entity;func_213298_c(Lnet/minecraft/entity/Pose;)Z",
+        "Lnet/minecraft/entity/Entity;updateFallState(DZLnet/minecraft/block/BlockState;Lnet/minecraft/util/math/BlockPos;)V": "Lnet/minecraft/entity/Entity;func_184231_a(DZLnet/minecraft/block/BlockState;Lnet/minecraft/util/math/BlockPos;)V"
+      }
+    }
+  }
+}
